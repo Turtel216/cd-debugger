@@ -3,8 +3,11 @@
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 
+#include <cstdint>
+#include <ios>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "linenoise.h"
@@ -46,6 +49,9 @@ auto debugger::handle_command(const std::string& line) const noexcept -> void {
 
   if (is_prefix(command, "continue")) {
     continue_execution();
+  } else if (is_prefix(command, "break")) {
+    std::string addr{args[1], 2};
+    set_breakpoint_at_address(std::stol(addr, 0, 16));
   } else {
     std::cerr << "Unknown command\n";
   }
@@ -57,4 +63,13 @@ auto debugger::continue_execution() const noexcept -> void {
   int wait_status;
   auto options = 0;
   waitpid(m_pid, &wait_status, options);
+}
+
+auto debugger::set_breakpoint_at_address(std::intptr_t addr) const noexcept
+    -> void {
+  std::cout << "Set breakpoint at address 0x" << std::hex << addr << std::endl;
+
+  breakpoint bp{m_pid, addr};
+  bp.enable();
+  m_breakpoints[addr] = bp;
 }
