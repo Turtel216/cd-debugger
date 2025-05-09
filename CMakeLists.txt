@@ -1,36 +1,30 @@
-cmake_minimum_required(VERSION 3.30)
-project(cdb LANGUAGES CXX)
+cmake_minimum_required (VERSION 3.10)
+project (cdb)
 
-# Enable testing
-include(CTest)
+add_compile_options(-std=c++14)
 
-# Source files
-set(SRC_FILES
-    src/main.cpp
+include_directories(external/libelfin external/linenoise include)
+add_executable(cdb src/main.cpp external/linenoise/linenoise.c)
+
+add_executable(hello examples/hello.cpp)
+set_target_properties(hello
+                      PROPERTIES COMPILE_FLAGS "-g -O0")
+
+add_executable(variable examples/variable.cpp)
+set_target_properties(variable
+                      PROPERTIES COMPILE_FLAGS "-gdwarf-2 -O0")
+
+add_executable(unwinding examples/stack_unwinding.cpp)
+set_target_properties(unwinding
+                      PROPERTIES COMPILE_FLAGS "-g -O0")
+
+
+add_custom_target(
+   libelfin
+   COMMAND make
+   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/external/libelfin
 )
-
-
-# Library for parser
-# add_library(parser_lib
-#     src/utils/errors/errors.cpp
-#     src/lexer/lexer.cpp
-#     src/lexer/token.cpp
-#     src/parser/ast.cpp
-#     src/parser/parser.cpp)
-
-# Main executable
-add_executable(cdb ${SRC_FILES})
-
-# Tests
-if (BUILD_TESTING)
-    # add_executable(lexer_test_success tests/lexer/test_success.cpp)
-    # target_link_libraries(lexer_test_success lexer_lib)
-    # add_test(NAME parser_failure COMMAND parser_test_failure)
-endif()
-
-# C++ standard
-set_target_properties(cdb PROPERTIES
-    CXX_STANDARD 23
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
-)
+target_link_libraries(cdb
+                      ${PROJECT_SOURCE_DIR}/external/libelfin/dwarf/libdwarf++.so
+                      ${PROJECT_SOURCE_DIR}/external/libelfin/elf/libelf++.so)
+add_dependencies(cdb libelfin)
