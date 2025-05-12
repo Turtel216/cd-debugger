@@ -1,4 +1,4 @@
-#include "../include/breakpoint.hpp"
+#include "../include/breakpoint.h"
 
 #include <sys/ptrace.h>
 #include <unistd.h>

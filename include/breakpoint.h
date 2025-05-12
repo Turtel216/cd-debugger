@@ -7,6 +7,7 @@
 
 class breakpoint {
  public:
+  breakpoint() = default;
   breakpoint(pid_t pid, std::intptr_t addr) noexcept
       : m_pid{pid}, m_addr{addr}, m_enabled{false}, m_saved_data{} {}
 

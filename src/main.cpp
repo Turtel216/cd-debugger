@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-#include "../include/debugger.hpp"
+#include "../include/debugger.h"
 
 auto execute_debugee(const std::string& prog_name) noexcept -> void;
 

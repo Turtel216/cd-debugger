@@ -1,4 +1,4 @@
-#include "../include/debugger.hpp"
+#include "../include/debugger.h"
 
 #include <sys/ptrace.h>
 #include <sys/wait.h>
@@ -30,7 +30,7 @@ auto is_prefix(const std::string& s, const std::string& of) noexcept -> bool {
   return std::equal(s.begin(), s.end(), of.begin());
 }
 
-auto debugger::run() const noexcept -> void {
+auto debugger::run() noexcept -> void {
   int wait_status;
   auto options = 0;
   waitpid(m_pid, &wait_status, options);
@@ -43,7 +43,7 @@ auto debugger::run() const noexcept -> void {
   }
 }
 
-auto debugger::handle_command(const std::string& line) const noexcept -> void {
+auto debugger::handle_command(const std::string& line) noexcept -> void {
   auto args = split(line, ' ');
   auto command = args[0];
 
@@ -57,7 +57,7 @@ auto debugger::handle_command(const std::string& line) const noexcept -> void {
   }
 }
 
-auto debugger::continue_execution() const noexcept -> void {
+auto debugger::continue_execution() noexcept -> void {
   ptrace(PTRACE_CONT, m_pid, nullptr, nullptr);
 
   int wait_status;
@@ -65,8 +65,7 @@ auto debugger::continue_execution() const noexcept -> void {
   waitpid(m_pid, &wait_status, options);
 }
 
-auto debugger::set_breakpoint_at_address(std::intptr_t addr) const noexcept
-    -> void {
+auto debugger::set_breakpoint_at_address(std::intptr_t addr) noexcept -> void {
   std::cout << "Set breakpoint at address 0x" << std::hex << addr << std::endl;
 
   breakpoint bp{m_pid, addr};
