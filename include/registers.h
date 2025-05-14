@@ -73,4 +73,4 @@ const std::array<reg_descriptor, n_registers> g_register_descriptors{{
     {reg::gs, 55, "gs"},
 }};
 
-#endif  // REGISTERS_H_
+#endif // REGISTERS_H_

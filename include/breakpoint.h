@@ -6,7 +6,7 @@
 #include <cstdint>
 
 class breakpoint {
- public:
+public:
   breakpoint() = default;
   breakpoint(pid_t pid, std::intptr_t addr) noexcept
       : m_pid{pid}, m_addr{addr}, m_enabled{false}, m_saved_data{} {}
@@ -14,11 +14,11 @@ class breakpoint {
   auto enable() noexcept -> void;
   auto disable() noexcept -> void;
 
- private:
+private:
   pid_t m_pid;
   std::intptr_t m_addr;
   bool m_enabled;
   uint8_t m_saved_data;
 };
 
-#endif  // BREAKPOINT_H_
+#endif // BREAKPOINT_H_

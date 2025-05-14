@@ -12,7 +12,7 @@
 
 #include "linenoise.h"
 
-auto split(const std::string& s, char delimiter) noexcept
+auto split(const std::string &s, char delimiter) noexcept
     -> std::vector<std::string> {
   std::vector<std::string> out{};
   std::stringstream ss{s};
@@ -25,8 +25,9 @@ auto split(const std::string& s, char delimiter) noexcept
   return out;
 }
 
-auto is_prefix(const std::string& s, const std::string& of) noexcept -> bool {
-  if (s.size() > of.size()) return false;
+auto is_prefix(const std::string &s, const std::string &of) noexcept -> bool {
+  if (s.size() > of.size())
+    return false;
   return std::equal(s.begin(), s.end(), of.begin());
 }
 
@@ -35,7 +36,7 @@ auto debugger::run() noexcept -> void {
   auto options = 0;
   waitpid(m_pid, &wait_status, options);
 
-  char* line = nullptr;
+  char *line = nullptr;
   while ((line = linenoise("cd-debugger> ")) != nullptr) {
     handle_command(line);
     linenoiseHistoryAdd(line);
@@ -43,7 +44,7 @@ auto debugger::run() noexcept -> void {
   }
 }
 
-auto debugger::handle_command(const std::string& line) noexcept -> void {
+auto debugger::handle_command(const std::string &line) noexcept -> void {
   auto args = split(line, ' ');
   auto command = args[0];
 
