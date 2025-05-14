@@ -5,7 +5,7 @@
 #include <string>
 #include <sys/ptrace.h>
 #include <sys/types.h>
-#include <user.h>
+#include <sys/user.h>
 
 auto get_register_value(pid_t pid, reg r) noexcept -> std::uint64_t {
   user_regs_struct regs;
@@ -44,4 +44,16 @@ auto get_register_from_name(const std::string &name) noexcept -> reg {
       std::find_if(begin(g_register_descriptors), end(g_register_descriptors),
                    [name](auto &&rd) { return rd.name == name; });
   return it->r;
+}
+
+auto set_register_value(pid_t pid, reg r, uint64_t value) -> void {
+  user_regs_struct regs;
+  ptrace(PTRACE_GETREGS, pid, nullptr, &regs);
+  auto it =
+      std::find_if(begin(g_register_descriptors), end(g_register_descriptors),
+                   [r](auto &&rd) { return rd.r == r; });
+
+  *(reinterpret_cast<uint64_t *>(&regs) +
+    (it - begin(g_register_descriptors))) = value;
+  ptrace(PTRACE_SETREGS, pid, nullptr, &regs);
 }

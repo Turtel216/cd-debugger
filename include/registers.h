@@ -83,4 +83,6 @@ auto get_register_name(reg r) noexcept -> std::string;
 
 auto get_register_from_name(const std::string &name) noexcept -> reg;
 
+auto set_register_value(pid_t pid, reg r, uint64_t value) -> void;
+
 #endif // REGISTERS_H_

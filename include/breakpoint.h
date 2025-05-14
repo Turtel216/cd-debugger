@@ -13,6 +13,7 @@ public:
 
   auto enable() noexcept -> void;
   auto disable() noexcept -> void;
+  auto is_enabled() const noexcept -> bool;
 
 private:
   pid_t m_pid;

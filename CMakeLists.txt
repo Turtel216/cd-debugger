@@ -4,7 +4,7 @@ project (cdb)
 add_compile_options(-std=c++14)
 
 include_directories(external/libelfin external/linenoise include)
-add_executable(cdb src/main.cpp src/debugger.cpp src/breakpoint.cpp external/linenoise/linenoise.c)
+add_executable(cdb src/main.cpp src/debugger.cpp src/breakpoint.cpp src/registers.cpp external/linenoise/linenoise.c)
 
 add_executable(hello examples/hello.cpp)
 set_target_properties(hello

@@ -1,6 +1,7 @@
 #ifndef DEBUGGER_H_
 #define DEBUGGER_H_
 
+#include <cstdint>
 #include <linux/types.h>
 
 #include <string>
@@ -8,6 +9,7 @@
 #include <utility>
 
 #include "breakpoint.h"
+#include "registers.h"
 
 class debugger {
 public:
@@ -24,6 +26,14 @@ private:
 
   auto handle_command(const std::string &line) noexcept -> void;
   auto continue_execution() noexcept -> void;
+  auto dump_registers() -> void;
+  auto read_memory(std::uint64_t address) const noexcept -> std::uint64_t;
+  auto write_memory(std::uint16_t address, std::uint64_t value) const noexcept
+      -> std::uint64_t;
+  auto get_pc() const noexcept -> std::uint64_t;
+  auto set_pc(std::uint64_t pc) -> void;
+  auto step_over_breakpoint() -> void;
+  auto wait_for_signal() const noexcept -> void;
 };
 
 #endif // DEBUGGER_H_

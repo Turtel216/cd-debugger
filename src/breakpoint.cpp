@@ -23,3 +23,5 @@ auto breakpoint::disable() noexcept -> void {
 
   m_enabled = false;
 }
+
+auto breakpoint::is_enabled() const noexcept -> bool { return m_enabled; }
