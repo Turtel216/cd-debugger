@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 
 enum class reg {
@@ -72,5 +73,14 @@ const std::array<reg_descriptor, n_registers> g_register_descriptors{{
     {reg::fs, 54, "fs"},
     {reg::gs, 55, "gs"},
 }};
+
+auto get_register_value(pid_t pid, reg r) noexcept -> std::uint64_t;
+
+auto get_register_value_from_dwarf_register(pid_t pid, unsigned regnum)
+    -> std::uint64_t;
+
+auto get_register_name(reg r) noexcept -> std::string;
+
+auto get_register_from_name(const std::string &name) noexcept -> reg;
 
 #endif // REGISTERS_H_
