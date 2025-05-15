@@ -33,3 +33,7 @@
 
 # Build Directories
 /build
+
+# Ccls
+compile_commands.json
+.cache/

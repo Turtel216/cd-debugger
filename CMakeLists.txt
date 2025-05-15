@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.10)
 project (cdb)
-
 add_compile_options(-std=c++14)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories(external/libelfin external/linenoise include)
 add_executable(cdb src/main.cpp src/debugger.cpp src/breakpoint.cpp src/registers.cpp external/linenoise/linenoise.c)
