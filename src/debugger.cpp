@@ -1,6 +1,7 @@
 #include "../include/debugger.h"
 #include "../include/registers.h"
 
+#include <fstream>
 #include <iomanip>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
@@ -12,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "dwarf/dwarf++.hh"
 #include "linenoise.h"
 
 auto split(const std::string &s, char delimiter) noexcept
@@ -34,9 +36,8 @@ auto is_prefix(const std::string &s, const std::string &of) noexcept -> bool {
 }
 
 auto debugger::run() noexcept -> void {
-  int wait_status;
-  auto options = 0;
-  waitpid(m_pid, &wait_status, options);
+  wait_for_signal();
+  initialise_load_address();
 
   char *line = nullptr;
   while ((line = linenoise("cd-debugger> ")) != nullptr) {
@@ -136,13 +137,96 @@ auto debugger::wait_for_signal() const noexcept -> void {
   waitpid(m_pid, &wait_status, options);
 }
 
+auto debugger::initialise_load_address() noexcept -> void {
+  // If this is a dynamic library (e.g. PIE)
+  if (m_elf.get_hdr().type == elf::et::dyn) {
+    std::ifstream map("/proc/" + std::to_string(m_pid) + "/maps");
+
+    // Read the first address from the file
+    std::string addr;
+    std::getline(map, addr, '-');
+
+    m_load_address = std::stoi(addr, 0, 16);
+  }
+}
+
 auto debugger::read_memory(std::uint64_t address) const noexcept
     -> std::uint64_t {
   return ptrace(PTRACE_PEEKDATA, m_pid, address, nullptr);
 }
 
 auto debugger::write_memory(std::uint16_t address,
-                            std::uint64_t value) const noexcept
-    -> std::uint64_t {
+                            std::uint64_t value) const noexcept -> void {
   ptrace(PTRACE_POKEDATA, m_pid, address, value);
+}
+
+auto debugger::get_function_from_pc(std::uint64_t pc) -> dwarf::die {
+  for (auto &cu : m_dwarf.compilation_units()) {
+    if (dwarf::die_pc_range(cu.root()).contains(pc)) {
+      for (const auto &die : cu.root()) {
+        if (die.tag == dwarf::DW_TAG::subprogram) {
+          if (dwarf::die_pc_range(die).contains(pc)) {
+            return die;
+          }
+        }
+      }
+    }
+  }
+  throw std::out_of_range("Cannot find function");
+}
+
+auto debugger::get_line_entry_from_pc(std::uint64_t pc)
+    -> dwarf::line_table::iterator {
+  for (auto &cu : m_dwarf.compilation_units()) {
+    if (die_pc_range(cu.root()).contains(pc)) {
+      auto &lt = cu.get_line_table();
+      auto it = lt.find_address(pc);
+      if (it == lt.end()) {
+        throw std::out_of_range{"Cannot find line entry"};
+      } else {
+        return it;
+      }
+    }
+  }
+
+  throw std::out_of_range{"Cannot find line entry"};
+}
+
+auto debugger::offset_load_address(std::uint64_t addr) -> std::uint64_t {
+  return addr - m_load_address;
+}
+
+auto debugger::print_source(const std::string &file_name, unsigned line,
+                            unsigned n_lines_context) -> void {
+  std::ifstream file{file_name};
+
+  // Work out a window around the desired line
+  auto start_line = line <= n_lines_context ? 1 : line - n_lines_context;
+  auto end_line = line + n_lines_context +
+                  (line < n_lines_context ? n_lines_context - line : 0) + 1;
+
+  char c{};
+  auto current_line = 1u;
+  // Skip lines up until start_line
+  while (current_line != start_line && file.get(c)) {
+    if (c == '\n') {
+      ++current_line;
+    }
+  }
+
+  // Output cursor if we're at the current line
+  std::cout << (current_line == line ? "> " : "  ");
+
+  // Write lines up until end_line
+  while (current_line <= end_line && file.get(c)) {
+    std::cout << c;
+    if (c == '\n') {
+      ++current_line;
+      // Output cursor if we're at the current line
+      std::cout << (current_line == line ? "> " : "  ");
+    }
+  }
+
+  // Write newline and make sure that the stream is flushed properly
+  std::cout << std::endl;
 }
